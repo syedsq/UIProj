@@ -118,7 +118,7 @@
             </a>
     </h1>
     <nav>
-        <a href="authors.php" class="nav-button">Authors</a>
+        
         <a href="categories.php" class="nav-button">Categories</a>
         <form action="search-results.php" method="GET" class="search">
             <input 

@@ -120,6 +120,6 @@ include 'cart-overlay.php'; ?>
 
 </body>
 <footer>
-        <p>&copy; 2024 RowdyBookly</p>
+        <p>&copy; 2025 RowdyBookly</p>
     </footer>
 </html>

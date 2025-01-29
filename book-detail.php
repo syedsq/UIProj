@@ -93,9 +93,7 @@ while ($row = $genres_result->fetch_assoc()) {
         <div class="book-details">
             <h2><?php echo htmlspecialchars($book['title']); ?></h2>
             <p><strong>Author:</strong> 
-                <strong><a href="author-detail.php?author_id=<?php echo urlencode($book['author_id']); ?>">
-                    <?php echo htmlspecialchars($book['author_name']); ?>
-                </a></strong>
+                <strong><?php echo htmlspecialchars($book['author_name']); ?></strong>
             </p>
             <p><strong>Genres:</strong> 
                 <strong><?php 
@@ -129,6 +127,6 @@ while ($row = $genres_result->fetch_assoc()) {
 </body>
 <script src="javascript/cart-interaction.js"></script>
 <footer>
-    <p>&copy; 2024 RowdyBookly</p>
+    <p>&copy; 2025 RowdyBookly</p>
 </footer>
 </html>

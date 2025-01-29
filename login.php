@@ -1,26 +1,34 @@
 <?php
 session_start(); // Start a session to track logged-in users
 
-// Fetch database URL from environment variable
-//$dbUrl = getenv('CLEARDB_DATABASE_URL');
-//$dbUrl = 'mysql://aqapvw1dt4k36dav:cp8n1pd5tgos08nw@qn0cquuabmqczee2.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/rp7q9eqqkuuf90wn';
-$dbUrl = getenv('JAWSDB_URL');
+// Check for database URL from environment variable or use fallback values
+$dbUrl = getenv('JAWSDB_URL'); // Try to fetch JAWSDB_URL
 
-// Parse the URL
-$dbParts = parse_url($dbUrl);
-
-$host = $dbParts['host'];
-$dbname = ltrim($dbParts['path'], '/');
-$username = $dbParts['user'];
-$password = $dbParts['pass'];
+if ($dbUrl) {
+    // Parse the URL if it's set
+    $dbParts = parse_url($dbUrl);
+    $host = $dbParts['host'];
+    $dbname = ltrim($dbParts['path'], '/');
+    $username = $dbParts['user'];
+    $password = $dbParts['pass'];
+} else {
+    // Use fallback for local development
+    $host = 'localhost';
+    $dbname = 'bookstore_db';
+    $username = 'root'; // Adjust for your local setup
+    $password = '';     // Adjust for your local setup
+}
 
 // Connect to the database
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
+
+// Initialize error variable for login feedback
+$error = "";
 
 // Check if form data is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -51,14 +59,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - RowdyBookly</title>
+    <title>Login - RowdyBookly</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-       <?php include "css/style.css"?>
+        /* Inline adjustments to maintain consistency */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-container h1 {
+            font-size: 24px;
+            color: #333333;
+            margin-bottom: 1rem;
+        }
+        .textbox {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .login-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            font-size: 16px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .login-button:hover {
+            background-color: #0056b3;
+        }
+        .signup-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .signup-link:hover {
+            text-decoration: underline;
+        }
+        .home-icon {
+            text-decoration: none;
+            font-size: 20px;
+            color: #007BFF;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -71,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)) { echo "<p style='color:red;'>$error</p>"; } ?>
             <form action="login.php" method="post">
                 <label for="email">Email:</label>
-                <input class="textbox" type="text" id="email" name="email" required>
+                <input class="textbox" type="email" id="email" name="email" placeholder="Enter your email" required>
                 
                 <label for="password">Password:</label>
-                <input class="textbox" type="password" id="password" name="password" required>
+                <input class="textbox" type="password" id="password" name="password" placeholder="Enter your password" required>
                 
                 <button type="submit" class="login-button">Login</button>
             </form>
@@ -82,5 +153,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </main>
     </div>
 </body>
-
 </html>

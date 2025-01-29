@@ -1,24 +1,8 @@
 <?php
 session_start(); // Start a session to track admin users
 
-// Fetch database URL from environment variable
-$dbUrl = getenv('JAWSDB_URL');
-
-// Parse the URL
-$dbParts = parse_url($dbUrl);
-
-$host = $dbParts['host'];
-$dbname = ltrim($dbParts['path'], '/');
-$username = $dbParts['user'];
-$password = $dbParts['pass'];
-
-// Connect to the database
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+// Include the database connection
+include 'config.php'; 
 
 // Check if form data is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,10 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     // Fetch admin data from the database
-    $stmt = $pdo->prepare("SELECT * FROM Admin WHERE email = :email");
-    $stmt->bindParam(':email', $email);
+    $stmt = $conn->prepare("SELECT * FROM Admin WHERE email = ?");
+    $stmt->bind_param('s', $email);
     $stmt->execute();
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+    $result = $stmt->get_result();
+    $admin = $result->fetch_assoc();
 
     // Verify admin credentials
     if ($admin && password_verify($password, $admin['password'])) {

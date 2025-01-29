@@ -1,104 +1,124 @@
 <?php
 session_start();
-include 'config.php'; 
+include 'header.php'; // Include the header
+require 'config.php'; // Use external config for DB credentials
 
-// Fetch all authors from the database
-$authors_query = "SELECT author_id, name, author_photo FROM Authors";
-$authors_result = $conn->query($authors_query);
+// Ensure database credentials exist
+if (empty($host) || empty($dbname) || empty($username) || empty($password)) {
+    die("Database connection failed: Missing credentials in config.php.");
+}
 
-$is_logged_in = isset($_SESSION['user_id']);
+// Attempt database connection
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
 
-// Count the total number of items in the cart
-$cart_item_count = 0;
-if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        $cart_item_count += $item['quantity'];  
-    }
+// Fetch authors from the database
+try {
+    $stmt = $pdo->query("SELECT * FROM Authors ORDER BY name ASC");
+    $authors = $stmt->fetchAll();
+} catch (PDOException $e) {
+    die("Failed to fetch authors: " . $e->getMessage());
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authors - RowdyBookly</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        <?php include 'css/style.css'; ?>
-        
-        .authors-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            padding: 20px;
-        }
 
-        .author {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 150px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            text-decoration: none;
-            background-color: #f9f9f9;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .author:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .author img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 10px;
-        }
-
-        .author p {
-            font-size: 16px;
-            color: #333;
-        }
-
-        .author:hover p {
-            color: #e67f00;
-        }
-    </style>
-    <?php include 'navigation-bar.php'; ?>
-</head>
-<body>
-<div class="body0">
-    <nav class="breadcrumb">
-        <a href="index.php">Home</a>
-        <span>&raquo;</span>
-        <a href="authors.php"><strong>Author</strong></a>
-        
-    </nav>
-    <main class="authors-container">
-        <?php if ($authors_result && $authors_result->num_rows > 0): ?>
-            <?php while ($author = $authors_result->fetch_assoc()): ?>
-                <a href="author-detail.php?author_id=<?php echo urlencode($author['author_id']); ?>" class="author">
-                    <img src="author-image/<?php echo htmlspecialchars($author['author_photo']); ?>" alt="<?php echo htmlspecialchars($author['name']); ?>">
-                    <p><?php echo htmlspecialchars($author['name']); ?></p>
-                </a>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p>No authors found in the database.</p>
+<div class="container">
+    <h1>Our Authors</h1>
+    <div class="grid-container">
+        <?php if (!empty($authors)) : ?>
+            <?php foreach ($authors as $author) : ?>
+                <div class="author-card">
+                    <img src="images/authors/<?= strtolower(str_replace([' ', '.', ','], '-', $author['name'])); ?>.jpg" 
+                         alt="<?= htmlspecialchars($author['name']); ?>" 
+                         onerror="this.src='images/authors/default.jpg';">
+                    <h3><?= htmlspecialchars($author['name']); ?></h3>
+                    <p><?= htmlspecialchars($author['bio'] ?? 'No biography available.'); ?></p>
+                </div>
+            <?php endforeach; ?>
+        <?php else : ?>
+            <p class="no-results">No authors found.</p>
         <?php endif; ?>
-    </main>
+    </div>
 </div>
 
-<?php include 'cart-overlay.php'; ?>
-<footer>
-    <p>&copy; 2024 RowdyBookly</p>
-</footer>
-</body>
-</html>
+<?php include 'footer.php'; ?> <!-- Include footer -->
 
-<?php $conn->close(); ?>
+<style>
+/* Container similar to books.php */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    border: 2px solid black;
+}
+
+/* Title */
+h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Grid layout for authors */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Author card */
+.author-card {
+    background: white;
+    border-radius: 8px;
+    border: 2px solid black;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+/* Hover effect */
+.author-card:hover {
+    transform: scale(1.05);
+}
+
+/* Author image */
+.author-card img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid black;
+    margin-bottom: 10px;
+}
+
+/* Author name */
+.author-card h3 {
+    color: #007BFF;
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+/* Author bio */
+.author-card p {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+}
+
+/* No authors message */
+.no-results {
+    font-size: 16px;
+    color: #777;
+}
+</style>

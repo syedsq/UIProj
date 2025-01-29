@@ -107,18 +107,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_purchase'])) 
         $order_stmt->close();
 
         // Save order items to the Order_Items table
-        foreach ($_SESSION['cart'] as $book_id => $item) {
-            $item_query = "INSERT INTO OrderItems (order_id, book_id, quantity, price) VALUES (?, ?, ?, ?)";
-            $item_stmt = $conn->prepare($item_query);
-            $item_stmt->bind_param("iiid", $order_id, $book_id, $item['quantity'], $item['price']);
-            $item_stmt->execute();
-            $item_stmt->close();
-        }
+foreach ($_SESSION['cart'] as $book_id => $item) {
+    $item_query = "INSERT INTO OrderItems (order_id, book_id, quantity, price) VALUES (?, ?, ?, ?)";
+    $item_stmt = $conn->prepare($item_query);
+    $item_stmt->bind_param("iiid", $order_id, $book_id, $item['quantity'], $item['price']);
+    $item_stmt->execute();
+    $item_stmt->close();
+}
 
-        unset($_SESSION['cart']);
+// Clear the cart and redirect to order confirmation
+unset($_SESSION['cart']);
+header("Location: order-confirmation.php");
+exit();
 
-        header("Location: order-confirmation.php?order_id=$order_id");
-        exit();
     }
 }
 
@@ -327,6 +328,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_purchase'])) 
     
 </body>
 <footer>
-    <p>&copy; 2024 RowdyBookly</p>
+    <p>&copy; 2025 RowdyBookly</p>
 </footer>
 </html>
